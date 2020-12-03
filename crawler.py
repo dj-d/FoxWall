@@ -51,62 +51,73 @@ def get_metadata(extension_links):
 
 
 def get_comment_metadata(comment_link):
-    comment_metadata_list = []
+    comments_list = []
 
-    html = requests.get(comment_link)
+    # TODO: To decomment
+    # html = requests.get(comment_link)
 
-    sleep(3)
+    # sleep(3)
 
-    page = BeautifulSoup(html.content, "html.parser")
+    # page = BeautifulSoup(html.content, "html.parser")
 
-    num_pages = page.find("div", class_="Paginate-page-number").text
-    num_pages = num_pages.split(" ")
-    num_pages = int(num_pages[3])
-
-    print(num_pages)
+    # num_pages = page.find("div", class_="Paginate-page-number").text
+    # num_pages = num_pages.split(" ")
+    # num_pages = int(num_pages[3])
+    #
+    # print(num_pages)
+    num_pages = 2
 
     for num_page in range(1, num_pages + 1):
-        link = comment_link + "&page=" + str(num_page)
-        html = requests.get(link)
+        html = requests.get(comment_link + "&page=" + str(num_page))
 
-        sleep(3)
-
+        print("link: " + comment_link + "&page=" + str(num_page))
         page = BeautifulSoup(html.content, "html.parser")
 
-        # TODO: Change find to find_all
-        content = page.find("div", class_="UserReview")
+        contents = page.find_all("div", class_="UserReview")
 
-        # TODO: Add for cycle to see all comment
-        comment = content.findChild("div", class_="ShowMoreCard-contents").text
+        for content in contents:
+            comment = content.findChild("div", class_="ShowMoreCard-contents").text
 
-        author = content.findChild("span", class_="AddonReviewCard-authorByLine")
+            try:
+                author = content.findChild("span", class_="AddonReviewCard-authorByLine")
 
-        publishing_time = author.findChild("a").get("title")
-        publishing_time = datetime.strptime(publishing_time, cons.COMMENT_TIME_FORMAT)
-        publishing_timestamp = time.mktime(publishing_time.timetuple())
 
-        author = author.text.replace(", " + author.findChild("a").text, "").replace("by ", "")
+                publishing_time = author.findChild("a").get("title")
+                publishing_time = datetime.strptime(publishing_time, cons.COMMENT_TIME_FORMAT)
+                publishing_timestamp = time.mktime(publishing_time.timetuple())
 
-        stars = content.find("div", class_="Rating Rating--small").get("title")
-        stars = stars.split(" ")
-        del stars[::2]
-        del stars[1:]
-        stars = int(stars[0])
+                author = author.text.replace(", " + author.findChild("a").text, "").replace("by ", "")
 
-        comment_metadata = {
-            "author": author,
-            "publishing_time": publishing_time,
-            "publishing_timestamp": publishing_timestamp,
-            "stars": stars,
-            "comment": comment
-        }
+                stars = content.find("div", class_="Rating Rating--small").get("title")
+                stars = stars.split(" ")
+                del stars[::2]
+                del stars[1:]
+                stars = int(stars[0])
 
-        comment_metadata_list.append(comment_metadata)
-    
-    return comment_metadata_list
+                comment_metadata = {
+                    "author": author,
+                    # "publishing_time": publishing_time,
+                    "publishing_timestamp": publishing_timestamp,
+                    "stars": stars,
+                    "comment": comment
+                }
+
+                comments_list.append(comment_metadata)
+            except Exception as e:
+                # TODO: Manage response message
+                # TODO: Manage unusual comments form
+
+                print("Error author")
+                print(content)
+
+    return comments_list
 
 
 extension_list = get_extensions_urls(1)
-print(extension_list)
+# print(extension_list)
 metadata_list = get_metadata(extension_list)
-print(metadata_list)
+# print(metadata_list)
+
+f = open("metadata.json", "w")
+f.write(str(metadata_list))
+f.close()
