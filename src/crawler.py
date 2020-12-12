@@ -119,6 +119,6 @@ extension_list = get_extensions_urls(1)
 metadata_list = get_metadata(extension_list)
 # print(metadata_list)
 
-f = open("metadata.json", "w")
+f = open("../metadata.json", "w")
 f.write(str(metadata_list))
 f.close()
