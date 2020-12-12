@@ -37,6 +37,7 @@ def get_metadata(extension_links):
 
         comment_link = cons.BASE_URL + page.find('a', class_='AddonMeta-reviews-title-link').get('href')
 
+        # TODO: Aggiungere numero totale delle valutazioni
         metadata = {
             'name': name.replace(author, "").strip(),
             'author': author.replace("by ", "").strip(),
